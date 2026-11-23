@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#e8312a">
+<title>떡볶이 축제 & 스크린야구 체험기</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        tteok: { 50:'#fff4f1', 100:'#ffe3dc', 200:'#ffc4b6', 400:'#ff6b4a', 500:'#f2442b', 600:'#e8312a', 700:'#c0221d' },
+        sauce: { 100:'#fff0dc', 500:'#ff8a1f' },
+        field: { 50:'#e9f7ef', 500:'#1f9d6a', 600:'#178257' },
+      },
+      fontFamily: { jua: ['Jua', 'sans-serif'], sans: ['"Noto Sans KR"', 'system-ui', 'sans-serif'] },
+    } }
+  }
+</script>
+<style>
+  html { font-size: 17px; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+  body { word-break: keep-all; background: #fffaf6; }
+  :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+
+  /* 상단 탭 메뉴 */
+  .tabbar { position: sticky; top: 0; z-index: 40; background: rgba(255,250,246,.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid #f0e6de; }
+  .tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; font-weight: 800; font-size: .85rem; color: #78716c; transition: color .25s; }
+  .tab .ic { font-size: 1.35rem; }
+  .tab.active { color: #c0221d; }
+  .tab-bar-line { position: absolute; bottom: 0; left: 0; height: 4px; border-radius: 4px 4px 0 0; background: linear-gradient(90deg, #e8312a, #ff8a1f); transition: transform .4s cubic-bezier(.2,.8,.2,1), width .4s cubic-bezier(.2,.8,.2,1); }
+  @media (min-width: 768px) { .tab { flex-direction: row; gap: 8px; font-size: 1rem; } }
+
+  /* 페이지 전환 */
+  [data-page][hidden] { display: none !important; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .page-in { animation: pageIn .45s cubic-bezier(.2,.8,.2,1) both; }
+
+  /* Hero 순차 등장 */
+  @keyframes heroIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
+  .hero-in { animation: heroIn .7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--d, 0) * .14s + .05s); }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .bob { display: inline-block; animation: bob 3s ease-in-out infinite; }
+
+  /* 방문 카드 */
+  .place { background: #fff; border: 2px solid #f3ece6; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s; }
+  .place:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(200,40,30,.14); border-color: #ffc4b6; }
+  .photo { position: relative; aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #8c857f;
+    background: repeating-linear-gradient(45deg, rgba(0,0,0,.025) 0 12px, transparent 12px 24px), linear-gradient(135deg, #ece8e4, #dcd7d2); }
+  .photo svg { width: 46px; height: 46px; opacity: .7; }
+  .photo .num { position: absolute; top: 12px; left: 12px; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-family: 'Jua', sans-serif; font-size: 1.2rem; color: #fff; background: linear-gradient(135deg, #e8312a, #ff8a1f); box-shadow: 0 4px 10px rgba(232,49,42,.35); }
+  .photo .num.green { background: linear-gradient(135deg, #178257, #3cc48d); box-shadow: 0 4px 10px rgba(23,130,87,.35); }
+  .photo.has-img { width: 100%; padding: 0; border: 0; cursor: zoom-in; display: block; }
+  .photo.has-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s cubic-bezier(.2,.8,.2,1); }
+  .place:hover .photo.has-img img { transform: scale(1.04); }
+  .photo .num { z-index: 1; }
+  .photo .zoom { position: absolute; right: 10px; bottom: 10px; z-index: 1; font-size: .78rem; font-weight: 800; color: #fff; background: rgba(28,25,23,.6); padding: 4px 9px; border-radius: 999px; }
+  .lb { position: fixed; inset: 0; z-index: 100; background: rgba(15,12,10,.88); display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity .25s; }
+  .lb.show { opacity: 1; }
+  .lb[hidden] { display: none; }
+  .lb-fig { max-width: min(1000px, 100%); max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .lb-fig img { max-width: 100%; max-height: calc(100vh - 110px); border-radius: 14px; object-fit: contain; }
+  .lb-fig figcaption { color: #f5f5f4; text-align: center; font-size: .95rem; }
+  .lb-x { position: absolute; top: 14px; right: 14px; width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,.15); color: #fff; font-size: 1.3rem; font-weight: 900; }
+  .finale { display: grid; grid-template-columns: 1fr; background: linear-gradient(135deg, #fff4f1, #e9f7ef); border: 2px solid #f3ece6; border-radius: 22px; overflow: hidden; }
+  @media (min-width: 768px) { .finale { grid-template-columns: 1fr 1fr; } }
+  .finale-photo { aspect-ratio: 4 / 3; }
+  .finale .photo .num { width: auto; padding: 0 10px; font-family: inherit; font-size: 1.1rem; }
+  .finish-time { color: #178257 !important; background: #e9f7ef !important; }
+  .span-bar { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .span-end b { display: block; font-family: 'Jua', sans-serif; font-size: 1.4rem; color: #1c1917; }
+  .span-label { font-size: .75rem; font-weight: 800; color: #78716c; }
+  .span-line { flex: 1; position: relative; height: 6px; border-radius: 999px; background: linear-gradient(90deg, #e8312a, #ff8a1f, #1f9d6a); }
+  .span-line span { position: absolute; left: 50%; top: -30px; transform: translateX(-50%); white-space: nowrap; font-size: .8rem; font-weight: 800; color: #c0221d; background: #fff; padding: 2px 8px; border-radius: 999px; border: 1px solid #ffc4b6; }
+  /* ---------- AI 활용 페이지 ---------- */
+  .ai-h3 { font-family: 'Jua', sans-serif; font-size: 1.5rem; color: #1c1917; margin-top: 36px; }
+  .ai-stat { background: linear-gradient(135deg, #2b2f4a, #4b3f8f); color: #fff; border-radius: 18px; padding: 16px; }
+  .ai-stat dt { font-size: .8rem; font-weight: 800; opacity: .85; }
+  .ai-stat dd { font-family: 'Jua', sans-serif; font-size: 2rem; margin-top: 2px; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; counter-reset: f; }
+  .flow li { position: relative; background: #fff; border: 2px solid #f3ece6; border-radius: 18px; padding: 14px 10px; text-align: center; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+  .flow li span { font-size: 1.8rem; }
+  .flow li b { color: #1c1917; }
+  .flow li small { color: #78716c; font-size: .78rem; }
+  .flow li:not(:last-child)::after { content: '→'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); font-weight: 900; color: #e8312a; z-index: 1; }
+  @media (max-width: 640px) { .flow { grid-template-columns: 1fr 1fr; } .flow li:nth-child(2)::after { content: ''; } }
+  .ai-example { background: #fff8f5; border: 2px dashed #ffc4b6; border-radius: 18px; padding: 16px; }
+  .ex-steps { display: grid; gap: 8px; }
+  .ex-steps > div { display: flex; align-items: center; gap: 10px; color: #44403c; }
+  .ex-steps > div.ok { color: #178257; font-weight: 700; }
+  .ex-n { flex-shrink: 0; min-width: 44px; text-align: center; font-size: .75rem; font-weight: 800; color: #fff; background: #e8312a; border-radius: 999px; padding: 3px 8px; }
+  .ex-steps > div:nth-child(even) .ex-n { background: #78716c; }
+  .ex-steps > div.ok .ex-n { background: #1f9d6a; }
+  .where { display: flex; gap: 12px; background: #fff; border: 2px solid #f3ece6; border-radius: 18px; padding: 14px; transition: transform .25s, box-shadow .25s; }
+  .where:hover { transform: translateY(-4px); box-shadow: 0 12px 26px rgba(75,63,143,.14); }
+  .where-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 14px; background: #f1eefb; display: grid; place-items: center; font-size: 1.4rem; }
+  .where-us { background: #e9f7ef; border-color: #bfe8d3; }
+  .where-us .where-ic { background: #fff; }
+  .badge { font-size: .72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+  .badge-ai { background: #4b3f8f; color: #fff; }
+  .badge-both { background: #ff8a1f; color: #fff; }
+  .badge-us { background: #1f9d6a; color: #fff; }
+  .prompt { background: #fff; border: 2px solid #f3ece6; border-radius: 18px 18px 18px 4px; padding: 14px 16px; }
+  .prompt-who { font-size: .75rem; font-weight: 800; color: #1f9d6a; }
+  .prompt p { margin-top: 4px; color: #1c1917; font-weight: 600; line-height: 1.55; }
+  .limit { background: #fffbeb; border: 2px solid #fde68a; border-radius: 18px; padding: 14px; }
+  .limit b { color: #92400e; }
+  .limit p { color: #57534e; font-size: .9rem; margin-top: 4px; line-height: 1.55; }
+  .ai-chip { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 800; color: #fff; background: #4b3f8f; padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+
+  .time { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; font-weight: 800; font-size: .9rem; color: #c0221d; background: #fff4f1; padding: 5px 10px; border-radius: 999px; }
+  .time.todo { border: 2px dashed #ffb3a3; }
+  .lines li { position: relative; padding-left: 14px; color: #57534e; line-height: 1.6; }
+  .lines li::before { content: ''; position: absolute; left: 0; top: .7em; width: 6px; height: 6px; border-radius: 50%; background: #ff8a1f; }
+
+  /* 질문 아코디언 */
+  .qa { background: #fff; border: 2px solid #f3ece6; border-radius: 20px; transition: border-color .3s, background-color .3s; }
+  .qa.open { border-color: #ffc4b6; background: #fff8f5; }
+  .qa-btn { width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px; text-align: left; min-height: 72px; }
+  .qa-q { flex-shrink: 0; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-family: 'Jua', sans-serif; font-size: 1.2rem; color: #fff; background: linear-gradient(135deg, #e8312a, #ff8a1f); }
+  .qa-arrow { flex-shrink: 0; width: 26px; height: 26px; color: #e8312a; transition: transform .3s ease; }
+  .qa.open .qa-arrow { transform: rotate(180deg); }
+  .qa-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+  .qa.open .qa-body { grid-template-rows: 1fr; }
+  .qa-inner { overflow: hidden; min-height: 0; }
+  .qa-inner > div { padding: 0 18px 20px 76px; opacity: 0; transition: opacity .3s ease; }
+  .qa.open .qa-inner > div { opacity: 1; }
+  @media (max-width: 640px) { .qa-inner > div { padding-left: 18px; } }
+
+  /* AI 활용 내역 표 */
+  .ai-wrap { border: 2px solid #f3ece6; border-radius: 18px; overflow: hidden; background: #fff; }
+  .ai { width: 100%; border-collapse: collapse; }
+  .ai thead th { background: linear-gradient(135deg, #e8312a, #ff8a1f); color: #fff; text-align: left; padding: 12px 14px; font-weight: 800; white-space: nowrap; }
+  .ai td { padding: 12px 14px; border-top: 1px solid #f3ece6; vertical-align: top; color: #44403c; line-height: 1.55; }
+  .ai tbody tr:nth-child(even) td { background: #fffaf7; }
+  .ai td:nth-child(1) { font-weight: 800; color: #1c1917; width: 20%; }
+  .ai td:nth-child(2) { font-weight: 800; color: #1c1917; width: 18%; }
+  .ai small { display: block; font-weight: 600; color: #78716c; font-size: .78rem; }
+  .fill { background: #fff0dc; color: #b35c00; border-radius: 6px; padding: 0 6px; font-weight: 800; }
+  @media (max-width: 767px) {
+    .ai thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .ai, .ai tbody, .ai tr, .ai td { display: block; width: 100% !important; }
+    .ai tr { padding: 10px 14px; border-top: 1px solid #f3ece6; }
+    .ai tbody tr:first-child { border-top: 0; }
+    .ai td { border: 0; padding: 4px 0; background: transparent !important; }
+    .ai td::before { content: attr(data-label); display: block; font-size: .75rem; font-weight: 800; color: #e8312a; }
+  }
+
+  /* 페이지 넘김 */
+  .pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 28px; }
+  .pg-btn { display: flex; align-items: center; min-height: 52px; padding: 0 16px; border-radius: 16px; font-weight: 800; background: #fff; border: 2px solid #f3ece6; color: #44403c; transition: transform .2s, border-color .2s; }
+  .pg-btn:hover { transform: translateY(-2px); border-color: #ffc4b6; }
+  .pg-btn.next { grid-column: 3; justify-content: flex-end; background: linear-gradient(135deg, #e8312a, #ff8a1f); color: #fff; border-color: transparent; }
+  .pg-btn[hidden] { display: none; }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 8px; height: 8px; border-radius: 999px; background: #e7e5e4; transition: width .3s, background .3s; }
+  .dots i.on { width: 22px; background: #e8312a; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body class="font-sans text-stone-800 antialiased">
+
+<!-- ===================== 상단 탭 메뉴 (총 4페이지) ===================== -->
+<nav class="tabbar" aria-label="페이지 메뉴">
+  <div class="relative mx-auto max-w-5xl grid grid-cols-4" id="tabs">
+    <a href="#home"      class="tab" data-tab="home"><span class="ic">🏠</span>소개</a>
+    <a href="#places"    class="tab" data-tab="places"><span class="ic">📍</span>방문 기록</a>
+    <a href="#questions" class="tab" data-tab="questions"><span class="ic">💬</span>질문 3가지</a>
+    <a href="#ai"        class="tab" data-tab="ai"><span class="ic">🤖</span>AI 활용</a>
+    <span class="tab-bar-line" aria-hidden="true"></span>
+  </div>
+</nav>
+
+<!-- ===================== 1. 맨 위: 제목 + 한 줄 소개 + 조원 ===================== -->
+<section data-page="home" id="home" class="relative overflow-hidden text-white">
+  <div class="absolute inset-0 bg-gradient-to-br from-tteok-600 via-tteok-500 to-sauce-500"></div>
+  <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
+  <div class="absolute -left-10 bottom-0 w-40 h-40 rounded-full bg-white/10"></div>
+
+  <div class="relative mx-auto max-w-5xl px-5 md:px-8 pt-10 pb-14 md:pt-16 md:pb-20">
+    <span class="hero-in inline-flex items-center gap-2 bg-white/20 px-3.5 py-1.5 rounded-full text-sm font-bold" style="--d:0">📚 인문학과 과학기술 · 조별활동</span>
+    <span class="hero-in inline-flex items-center gap-2 bg-[#4b3f8f] px-3.5 py-1.5 rounded-full text-sm font-bold ml-1" style="--d:0">🤖 생성형 AI로 바이브 코딩한 체험기</span>
+    <p class="hero-in mt-5 text-5xl md:text-6xl" style="--d:1"><span class="bob">🌶️</span> <span class="bob" style="animation-delay:.4s">🍢</span> <span class="bob" style="animation-delay:.8s">⚾</span></p>
+    <h1 class="hero-in font-jua text-[2.2rem] md:text-[3.4rem] leading-[1.15] mt-4" style="--d:2">
+      대구 떡볶이 축제 &amp;<br><span class="text-[#ffe08a]">스크린야구 체험기</span>
+    </h1>
+    <p class="hero-in mt-4 text-lg md:text-xl text-white/95 font-medium" style="--d:3">
+      미식과 액티비티로 나눈 세 시간의 기록 — 맛으로 만나고, 경기로 가까워졌어요.
+    </p>
+
+    <!-- 조원 -->
+    <div class="hero-in mt-6 inline-flex flex-wrap items-center gap-2.5 bg-white text-stone-800 rounded-2xl md:rounded-full px-4 py-3 shadow-lg" style="--d:4">
+      <span class="bg-stone-900 text-white text-sm font-bold px-3 py-1.5 rounded-full">2조</span>
+      <span class="inline-flex items-center gap-2 font-bold"><span class="w-8 h-8 rounded-full bg-tteok-600 text-white grid place-items-center text-sm">김</span>김형준</span>
+      <span class="inline-flex items-center gap-2 font-bold"><span class="w-8 h-8 rounded-full bg-field-500 text-white grid place-items-center text-sm">신</span>신희정</span>
+    </div>
+
+    <!-- 활동 요약 -->
+    <dl class="hero-in mt-8 grid grid-cols-2 md:grid-cols-4 gap-3" style="--d:5">
+      <div class="bg-white/95 text-stone-800 rounded-2xl p-4"><dt class="text-sm font-bold text-tteok-600">⏱️ 총 소요 시간</dt><dd class="font-jua text-2xl mt-1">3시간 6분</dd></div>
+      <div class="bg-white/95 text-stone-800 rounded-2xl p-4"><dt class="text-sm font-bold text-tteok-600">💰 1인당 예산</dt><dd class="font-jua text-2xl mt-1">10,800원</dd></div>
+      <div class="bg-white/95 text-stone-800 rounded-2xl p-4"><dt class="text-sm font-bold text-tteok-600">📍 들른 곳</dt><dd class="font-jua text-2xl mt-1">6곳</dd></div>
+      <div class="bg-white/95 text-stone-800 rounded-2xl p-4"><dt class="text-sm font-bold text-tteok-600">📅 날짜</dt><dd class="font-jua text-2xl mt-1">10.24(토) ☔</dd></div>
+    </dl>
+
+    <div class="hero-in mt-8 flex flex-col sm:flex-row gap-3" style="--d:6">
+      <a href="#places" class="inline-flex items-center justify-center min-h-[56px] px-6 rounded-2xl bg-white text-tteok-700 font-black text-lg shadow-lg hover:-translate-y-0.5 transition">📍 우리의 방문 기록 보기 →</a>
+      <a href="guide.html" target="_blank" rel="noopener" class="inline-flex items-center justify-center min-h-[56px] px-6 rounded-2xl border-2 border-white/80 text-white font-bold hover:bg-white/10 transition">🗺️ 우리가 만든 앱: 축제 스마트 가이드 ↗</a>
+    </div>
+  </div>
+</section>
+
+<main class="mx-auto max-w-5xl px-4 md:px-8 py-10 pb-16">
+
+  <!-- ===================== 2. 중간: 우리가 들른 5곳 ===================== -->
+  <section data-page="places" id="places" hidden>
+    <p class="text-sm font-bold text-tteok-600">2 / 4 · 방문 기록</p>
+    <h2 class="font-jua text-3xl md:text-4xl text-stone-900 mt-1">우리가 들른 6곳 📍</h2>
+    <p class="text-stone-600 mt-2">10월 24일(토) 오후 3시 7분 축제장에 도착해 떡볶이 부스 네 곳을 둘러보고, 식사 뒤 스크린야구장으로 이동해 오후 6시 13분에 마무리했어요. 사진을 누르면 크게 볼 수 있어요.</p>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <article class="place">
+        <button type="button" class="photo has-img" data-full="img/arrival.jpg" data-cap="우산을 쓴 2조가 10월 24일 오후 3시 7분을 띄운 휴대폰을 들고 찍은 도착 인증 사진" aria-label="사진 크게 보기: 우산을 쓴 2조가 10월 24일 오후 3시 7분을 띄운 휴대폰을 들고 찍은 도착 인증 사진"><img src="img/arrival.jpg" alt="우산을 쓴 2조가 10월 24일 오후 3시 7분을 띄운 휴대폰을 들고 찍은 도착 인증 사진" loading="lazy" style="object-position:50% 50%"><span class="num">1</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span></button>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <span class="time">⏰ 10월 24일(토) 오후 3:07 도착</span>
+          <h3 class="font-jua text-2xl text-stone-900">대구 iM뱅크PARK 축제장 <span class="text-base font-sans font-bold text-stone-500">도착</span></h3>
+          <ul class="lines space-y-1">
+            <li>비가 내리는 토요일 오후, 떡볶이 페스티벌 축제장에 도착했어요.</li>
+            <li>도착 시각을 휴대폰 화면으로 인증하며 오늘의 기록을 시작했어요.</li>
+            <li>우산이 가득했지만 축제 분위기는 뜨거웠어요.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="place">
+        <button type="button" class="photo has-img" data-full="img/tteokbora.jpg" data-cap="“그래, 떡보라가 돌아왔다!” 문구와 대왕 가래떡 떡볶이가 그려진 떡보라 보라색 배너" aria-label="사진 크게 보기: “그래, 떡보라가 돌아왔다!” 문구와 대왕 가래떡 떡볶이가 그려진 떡보라 보라색 배너"><img src="img/tteokbora.jpg" alt="“그래, 떡보라가 돌아왔다!” 문구와 대왕 가래떡 떡볶이가 그려진 떡보라 보라색 배너" loading="lazy" style="object-position:50% 40%"><span class="num">2</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span></button>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <h3 class="font-jua text-2xl text-stone-900">떡보라 <span class="text-base font-sans font-bold text-stone-500">D존 · 충북 청주</span></h3>
+          <ul class="lines space-y-1">
+            <li>“그래, 떡보라가 돌아왔다!” 청주에서 온 떡보라 부스를 찾았어요.</li>
+            <li>20cm가 넘는 대왕 가래떡 떡볶이가 대표 메뉴예요.</li>
+            <li>보라색 배너가 비 오는 축제장에서도 눈에 띄었어요.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="place">
+        <button type="button" class="photo has-img" data-full="img/akeo.jpg" data-cap="비 오는 날 우산을 쓰고 줄을 선 사람들 앞에 세워진 왕십리 악어떡볶이 배너" aria-label="사진 크게 보기: 비 오는 날 우산을 쓰고 줄을 선 사람들 앞에 세워진 왕십리 악어떡볶이 배너"><img src="img/akeo.jpg" alt="비 오는 날 우산을 쓰고 줄을 선 사람들 앞에 세워진 왕십리 악어떡볶이 배너" loading="lazy" style="object-position:50% 62%"><span class="num">3</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span></button>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <h3 class="font-jua text-2xl text-stone-900">왕십리 악어떡볶이 <span class="text-base font-sans font-bold text-stone-500">D존 · 서울</span></h3>
+          <ul class="lines space-y-1">
+            <li>TV 예능에도 나온 서울 왕십리 맛집, 악어떡볶이를 찾았어요.</li>
+            <li>쫄깃하면서도 부드러운 쌀떡볶이가 대표 메뉴예요.</li>
+            <li>비가 오는데도 우산을 쓴 사람들이 길게 줄을 섰어요.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="place">
+        <button type="button" class="photo has-img" data-full="img/eats.jpg" data-cap="포항 특산미로 직접 뽑은 가래떡 떡볶이와 마늘 돈가스를 소개하는 즉석떡볶이 이츠 배너" aria-label="사진 크게 보기: 포항 특산미로 직접 뽑은 가래떡 떡볶이와 마늘 돈가스를 소개하는 즉석떡볶이 이츠 배너"><img src="img/eats.jpg" alt="포항 특산미로 직접 뽑은 가래떡 떡볶이와 마늘 돈가스를 소개하는 즉석떡볶이 이츠 배너" loading="lazy" style="object-position:50% 36%"><span class="num">4</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span></button>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <h3 class="font-jua text-2xl text-stone-900">포항 즉석떡볶이 이츠 <span class="text-base font-sans font-bold text-stone-500">D존 · 경북 포항</span></h3>
+          <ul class="lines space-y-1">
+            <li>포항 특산미로 직접 뽑은 가래떡을 쓰는 즉석떡볶이 부스예요.</li>
+            <li>국내산 마늘을 듬뿍 바른 마늘 돈가스를 곁들인 메뉴가 눈길을 끌었어요.</li>
+            <li>같은 떡볶이라도 지역마다 재료와 개성이 다르다는 걸 느꼈어요.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="place">
+        <button type="button" class="photo has-img" data-full="img/hongge.jpg" data-cap="포장 용기에 통째로 담긴 홍게" aria-label="사진 크게 보기: 포장 용기에 통째로 담긴 홍게"><img src="img/hongge.jpg" alt="포장 용기에 통째로 담긴 홍게" loading="lazy" style="object-position:90% 50%"><span class="num">5</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span></button>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <h3 class="font-jua text-2xl text-stone-900">속초 홍게 떡볶이 <span class="text-base font-sans font-bold text-stone-500">D존 · 강원 속초</span></h3>
+          <ul class="lines space-y-1">
+            <li>홍게 한 마리가 통째로 들어간 떡볶이를 맛봤어요.</li>
+            <li>포장 용기를 가득 채운 홍게 다리가 보는 것만으로도 압도적이었어요.</li>
+            <li>게살의 감칠맛이 더해져 길거리 음식이 한 끼 요리가 됐어요.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="place">
+        <button type="button" class="photo has-img" data-full="img/baseball.jpg" data-cap="그물망 너머로 보이는 스크린야구 타석에서 배트를 휘두르는 조원" aria-label="사진 크게 보기: 그물망 너머로 보이는 스크린야구 타석에서 배트를 휘두르는 조원"><img src="img/baseball.jpg" alt="그물망 너머로 보이는 스크린야구 타석에서 배트를 휘두르는 조원" loading="lazy" style="object-position:35% 50%"><span class="num green">6</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span></button>
+        <div class="p-5 flex flex-col gap-3 flex-1">
+          <h3 class="font-jua text-2xl text-stone-900">스크린야구장 <span class="text-base font-sans font-bold text-stone-500">식후 액티비티</span></h3>
+          <ul class="lines space-y-1">
+            <li>식사를 마치고 스크린야구장으로 이동해 한 경기를 치렀어요.</li>
+            <li>번갈아 타석에 서며 협동과 건강한 경쟁을 즐겼어요.</li>
+            <li>시원한 타격으로 스트레스를 풀고 한층 가까워졌어요.</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+
+    <!-- 활동 마무리 (마무리 시각) -->
+    <article class="finale mt-5">
+      <button type="button" class="photo has-img finale-photo" data-full="img/finish.jpg" data-cap="10월 24일 오후 6시 13분을 띄운 휴대폰을 들고 찍은 2조의 마무리 인증 사진" aria-label="사진 크게 보기: 10월 24일 오후 6시 13분을 띄운 휴대폰을 들고 찍은 2조의 마무리 인증 사진">
+        <img src="img/finish.jpg" alt="10월 24일 오후 6시 13분을 띄운 휴대폰을 들고 찍은 2조의 마무리 인증 사진" loading="lazy" style="object-position:50% 40%">
+        <span class="num">🏁</span><span class="zoom" aria-hidden="true">🔍 크게 보기</span>
+      </button>
+      <div class="p-5 md:p-7 flex flex-col gap-3 justify-center">
+        <!-- 마무리 시각: 아래 문구만 바꾸면 돼요 -->
+        <span class="time finish-time">🏁 10월 24일(토) 오후 6:13 마무리</span>
+        <h3 class="font-jua text-3xl text-stone-900">활동 마무리</h3>
+        <p class="text-stone-600 leading-relaxed">스크린야구를 끝으로 오늘의 일정을 마쳤어요. 도착할 때처럼 휴대폰 시계로 마무리 시각을 인증했어요.</p>
+        <div class="span-bar" aria-label="도착 오후 3시 7분부터 마무리 오후 6시 13분까지 총 3시간 6분">
+          <div class="span-end"><span class="span-label">도착</span><b>15:07</b></div>
+          <div class="span-line"><span>총 3시간 6분</span></div>
+          <div class="span-end text-right"><span class="span-label">마무리</span><b>18:13</b></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===================== 3. 아래: 우리가 나눈 질문 3가지 ===================== -->
+  <section data-page="questions" id="questions" hidden>
+    <p class="text-sm font-bold text-tteok-600">3 / 4 · 질문과 답</p>
+    <h2 class="font-jua text-3xl md:text-4xl text-stone-900 mt-1">우리가 나눈 질문 3가지 💬</h2>
+    <p class="text-stone-600 mt-2">질문은 우리 조가 정했고, 답변은 AI가 초안을 썼어요. 질문을 누르면 답변이 펼쳐져요.</p>
+
+    <div class="mt-6 space-y-3">
+      <div class="qa">
+        <button type="button" class="qa-btn" aria-expanded="false" aria-controls="qa1" id="qa1-q">
+          <span class="qa-q">Q1</span>
+          <span class="flex-1 font-bold text-lg text-stone-900">떡볶이 같은 길거리 음식이 어떻게 지역 경제와 문화를 잇는 매개체가 될까?</span>
+          <svg class="qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="qa-body" id="qa1" role="region" aria-labelledby="qa1-q" inert><div class="qa-inner"><div>
+          <p class="font-bold text-tteok-700">💡 우리 답변 <span class="ai-chip">🤖 AI 초안</span></p>
+          <p class="mt-1 text-stone-700 leading-relaxed">축제는 지역 소상공인이 자신의 가게를 알리고, 방문객은 그 지역의 맛과 이야기를 경험하는 자리였어요. 떡볶이 한 그릇을 사 먹는 소비가 지역 상권에 활력을 주고, 전국의 떡볶이가 대구에 모이면서 ‘떡볶이의 도시 대구’라는 정체성이 하나의 문화 콘텐츠가 됐어요. 미식은 단순한 먹는 일을 넘어 사람과 지역을 잇는 매개체라고 생각해요.</p>
+        </div></div></div>
+      </div>
+
+      <div class="qa">
+        <button type="button" class="qa-btn" aria-expanded="false" aria-controls="qa2" id="qa2-q">
+          <span class="qa-q">Q2</span>
+          <span class="flex-1 font-bold text-lg text-stone-900">비가 오는 불편한 날씨였는데, 왜 오히려 축제가 더 즐거웠을까?</span>
+          <svg class="qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="qa-body" id="qa2" role="region" aria-labelledby="qa2-q" inert><div class="qa-inner"><div>
+          <p class="font-bold text-tteok-700">💡 우리 답변 <span class="ai-chip">🤖 AI 초안</span></p>
+          <p class="mt-1 text-stone-700 leading-relaxed">우산을 맞대고 줄을 서고, 천막 아래 모여 떡볶이를 나눠 먹으면서 모르는 사람들과도 자연스럽게 가까워졌어요. 함께 불편함을 견디는 경험이 오히려 연대감을 만들었고, 빗소리 속에서 먹은 뜨끈한 떡볶이는 맑은 날보다 더 오래 기억에 남는 추억이 됐어요.</p>
+        </div></div></div>
+      </div>
+
+      <div class="qa">
+        <button type="button" class="qa-btn" aria-expanded="false" aria-controls="qa3" id="qa3-q">
+          <span class="qa-q">Q3</span>
+          <span class="flex-1 font-bold text-lg text-stone-900">가상 현실 스포츠인 스크린야구가 어떻게 현실의 유대감을 키울 수 있을까?</span>
+          <svg class="qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="qa-body" id="qa3" role="region" aria-labelledby="qa3-q" inert><div class="qa-inner"><div>
+          <p class="font-bold text-tteok-700">💡 우리 답변 <span class="ai-chip">🤖 AI 초안</span></p>
+          <p class="mt-1 text-stone-700 leading-relaxed">경기는 화면 속 가상 공간에서 열렸지만, 서로의 타격 폼을 봐 주고 안타에 함께 환호하며 나눈 하이파이브와 웃음은 모두 현실의 감정이었어요. 기술이 장비·장소의 부담을 낮춰 누구나 쉽게 함께할 수 있게 했고, 협동과 건강한 경쟁 속에서 스트레스를 풀며 친밀감이 커졌어요. 기술은 사람 사이를 멀게도 하지만, 잘 쓰면 오프라인의 관계를 더 단단하게 만든다는 걸 느꼈어요.</p>
+        </div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 4. 맨 끝: AI 활용 내역 ===================== -->
+  <section data-page="ai" id="ai" hidden>
+    <p class="text-sm font-bold text-tteok-600">4 / 4 · AI 활용 내역</p>
+    <h2 class="font-jua text-3xl md:text-4xl text-stone-900 mt-1">AI 활용 내역 🤖</h2>
+    <p class="text-stone-600 mt-2 leading-relaxed">이 체험기와 ‘떡볶이 축제 스마트 가이드’는 생성형 AI <b>Claude</b>와 대화하며 만드는 <b>바이브 코딩</b>으로 완성했어요. 우리는 코드를 한 줄도 직접 쓰지 않았어요. 말로 요청하면 AI가 만들고, 우리가 화면을 확인한 뒤 고칠 점을 다시 요청하는 과정을 반복했어요.</p>
+
+    <!-- 한눈에 보는 AI 활용 -->
+    <dl class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="ai-stat"><dt>💬 AI에게 보낸 요청</dt><dd>30회+</dd></div>
+      <div class="ai-stat"><dt>🌐 AI로 만든 웹페이지</dt><dd>2개</dd></div>
+      <div class="ai-stat"><dt>🖼️ AI가 읽은 사진·이미지</dt><dd>10장</dd></div>
+      <div class="ai-stat"><dt>⌨️ 우리가 직접 쓴 코드</dt><dd>0줄</dd></div>
+    </dl>
+
+    <!-- 바이브 코딩 과정 -->
+    <h3 class="ai-h3">🔁 바이브 코딩은 이렇게 했어요</h3>
+    <ol class="flow mt-3">
+      <li><span>💬</span><b>말로 요청</b><small>“~하게 만들어 줘”</small></li>
+      <li><span>🤖</span><b>AI가 생성</b><small>HTML·CSS·JS 작성</small></li>
+      <li><span>👀</span><b>우리가 확인</b><small>휴대폰·PC로 보기</small></li>
+      <li><span>🔁</span><b>다시 요청</b><small>“이건 이렇게 고쳐 줘”</small></li>
+    </ol>
+    <div class="ai-example mt-4">
+      <p class="font-bold text-stone-900">예시 — 길 찾기 동선이 바뀐 과정</p>
+      <div class="ex-steps mt-3">
+        <div><span class="ex-n">1차</span>AI가 부스 사이를 <b>직선</b>으로 연결</div>
+        <div><span class="ex-n">요청</span>“경기장을 가로지르면 안 돼”</div>
+        <div><span class="ex-n">2차</span>AI가 경기장 둘레를 <b>원형</b>으로 우회</div>
+        <div><span class="ex-n">요청</span>“둥글게가 아니라 경로에 맞춰서”</div>
+        <div class="ok"><span class="ex-n">최종</span>배치도의 <b>실제 길</b>을 따라 가장 짧은 길 계산</div>
+      </div>
+    </div>
+
+    <!-- 어디에 AI를 썼을까 -->
+    <h3 class="ai-h3">🔍 이 체험기, 어디에 AI를 썼을까?</h3>
+    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">🏠</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">제목 · 한 줄 소개</b><span class="badge badge-ai">🤖 AI 작성</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">제목, “미식과 액티비티로 나눈 세 시간의 기록” 같은 소개 문구를 AI가 썼어요.</p>
+          </div>
+        </div>
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">📍</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">방문 카드 설명</b><span class="badge badge-ai">🤖 AI 작성</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">사진 속 배너 글자(“그래, 떡보라가 돌아왔다!”, “포항 특산미로 직접 뽑은 가래떡”)를 AI가 읽고 3줄 설명을 썼어요.</p>
+          </div>
+        </div>
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">⏰</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">도착 · 마무리 시각</b><span class="badge badge-ai">🤖 AI가 사진 판독</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">인증 사진 속 휴대폰 시계(3:07, 6:13)를 AI가 읽어 넣고, 총 3시간 6분과 맞는지 계산했어요.</p>
+          </div>
+        </div>
+        <div class="where where-both">
+          <span class="where-ic" aria-hidden="true">🖼️</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">사진</b><span class="badge badge-both">🤝 조원 촬영 + AI 편집</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">사진은 우리가 찍었고, AI가 웹용으로 크기를 줄이고 카드에 맞게 보일 부분을 정했어요.</p>
+          </div>
+        </div>
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">💬</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">질문 3가지 답변</b><span class="badge badge-ai">🤖 AI 초안</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">우리가 처음 정한 주제(미식과 지역 경제, 비 오는 축제, 가상 스포츠와 유대감)로 AI가 답변 초안을 썼어요.</p>
+          </div>
+        </div>
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">🎨</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">디자인 · 코드</b><span class="badge badge-ai">🤖 AI 100%</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">탭 메뉴, 사진 크게 보기, 펼쳐지는 질문까지 HTML·CSS·JavaScript를 모두 AI가 작성했어요.</p>
+          </div>
+        </div>
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">🗺️</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">스마트 가이드 앱</b><span class="badge badge-ai">🤖 AI 제작</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">부스 배치도·라인업 이미지 판독, 최단 경로 계산, 웹 검색까지 AI가 맡았어요.</p>
+          </div>
+        </div>
+        <div class="where where-ai">
+          <span class="where-ic" aria-hidden="true">📱</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">QR 코드</b><span class="badge badge-ai">🤖 AI 생성 · 검사</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">AI가 QR 코드를 만들고, 찍었을 때 정확한 주소가 나오는지 직접 읽어 확인했어요.</p>
+          </div>
+        </div>
+        <div class="where where-us">
+          <span class="where-ic" aria-hidden="true">🙋</span>
+          <div class="flex-1 min-w-0">
+            <p class="flex flex-wrap items-center gap-1.5"><b class="text-stone-900">우리가 직접 한 일</b><span class="badge badge-us">🙋 2조</span></p>
+            <p class="text-sm text-stone-600 mt-1 leading-relaxed">축제 방문과 스크린야구 체험, 사진 촬영, 그리고 AI에게 요청하고 결과를 확인해 “이렇게 고쳐 줘”라고 다시 지시하는 일.</p>
+          </div>
+        </div>
+    </div>
+
+    <!-- 실제 프롬프트 -->
+    <h3 class="ai-h3">✍️ 우리가 실제로 보낸 프롬프트</h3>
+    <ul class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <li class="prompt"><span class="prompt-who">🙋 2조</span><p>“대학생 조별 과제 결과물을 보여주기 위한 모바일 친화적인 반응형 웹페이지를 만들어 줘.”</p></li>
+        <li class="prompt"><span class="prompt-who">🙋 2조</span><p>“전체 부스를 입력해줘 저건 너무 적잖아”</p></li>
+        <li class="prompt"><span class="prompt-who">🙋 2조</span><p>“동선이 경기장을 가로지르면 안돼 경기장 주위로 돌아야돼”</p></li>
+        <li class="prompt"><span class="prompt-who">🙋 2조</span><p>“둥글게 도는게 아니라 경로 맞춰서”</p></li>
+        <li class="prompt"><span class="prompt-who">🙋 2조</span><p>“설정 버튼을 누르면 오른쪽에서 Drawer가 Spring 모션으로 열리게 해 줘.”</p></li>
+        <li class="prompt"><span class="prompt-who">🙋 2조</span><p>“방문 시각은 축제장 도착한 것만 넣어주고 다른 것들은 빼줘”</p></li>
+    </ul>
+
+    <!-- 과제 표 -->
+    <h3 class="ai-h3">📋 AI 활용 내역 표</h3>
+    <div class="ai-wrap mt-3">
+      <table class="ai">
+        <caption class="sr-only">AI 활용 내역: 사용 도구, 사용 단계, 프롬프트 요지</caption>
+        <thead><tr><th scope="col">사용 도구</th><th scope="col">사용 단계</th><th scope="col">프롬프트 요지</th></tr></thead>
+        <tbody>
+          <tr>
+            <td data-label="사용 도구"><span class="fill">도구명 입력</span><small>(동선 기획에 쓴 AI)</small></td>
+            <td data-label="사용 단계">01 사전 기획</td>
+            <td data-label="프롬프트 요지">축제와 식후 활동을 묶은 동선·예산 짜기 → <b>총 3시간 6분 · 1인당 10,800원</b> 계획 <span class="fill">실제 프롬프트 요지 입력</span></td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">02 체험기 첫 초안</td>
+            <td data-label="프롬프트 요지">“대학생 조별 과제 결과물을 보여주는 모바일 반응형 웹페이지를 하나의 HTML 파일로, 카드형 레이아웃과 부드러운 스크롤 애니메이션” — 5개 섹션 구성</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">03 앱 기획 · 제작</td>
+            <td data-label="프롬프트 요지">“대구 떡볶이 축제 스마트 가이드 모바일 웹앱” — 나만의 떡볶이 동선 만들기, 쓰레기통·화장실·취식 구역 찾기</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">04 이미지 분석</td>
+            <td data-label="프롬프트 요지">축제 부스 배치도·업체 라인업 이미지를 AI가 읽고 부스 91곳 입력 → “빠진 부스 다 추가”, “홈페이지 지도를 기준으로” 지도 다시 그리기</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">05 기능 개선</td>
+            <td data-label="프롬프트 요지">“현재 위치에서 가장 가까운 화장실·휴지통 찾기”, “동선이 경기장을 가로지르면 안 돼, 경기장 주위로” → 배치도의 길을 따르는 최단 경로</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">06 정보 조사</td>
+            <td data-label="프롬프트 요지">AI가 웹 검색으로 축제 일정(10.23~25)·장소(iM뱅크PARK)·프로그램을 찾아 확인하고, 축제 소개를 모든 연령이 쉽게 읽도록 정리</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">07 UI 디자인</td>
+            <td data-label="프롬프트 요지">Hero, 카드·Bento Grid, 반응형(3·2·1열), 사이드바, 탭, FAQ 아코디언, Spring 모션 Drawer를 차례로 요청 → 전체 5페이지 이하로 재구성</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">08 체험기 제작</td>
+            <td data-label="프롬프트 요지">과제 예시 구조 그대로 — 맨 위 제목·한 줄 소개·조원 / 들른 곳 카드 / 질문 3가지 펼치기 / AI 활용 내역 표</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">09 사진 반영</td>
+            <td data-label="프롬프트 요지">조원이 찍은 사진 7장을 카드 자리에 맞게 넣기 → AI가 사진 속 배너 글자와 휴대폰 시계(3:07 · 6:13)를 읽어 설명·시각 작성</td>
+          </tr>
+          <tr>
+            <td data-label="사용 도구">Claude<small>(Anthropic · Claude Code)</small></td>
+            <td data-label="사용 단계">10 배포 · QR</td>
+            <td data-label="프롬프트 요지">완성한 웹페이지를 링크로 올리고, PPT·포스터용 QR 코드를 만든 뒤 실제로 읽히는지 AI가 검사</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 한계와 대처 -->
+    <h3 class="ai-h3">⚠️ AI의 한계와 우리가 확인한 점</h3>
+    <ul class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+      <li class="limit"><b>작은 글씨 오독</b><p>AI가 배치도의 작은 글씨를 잘못 읽어 부스가 빠졌어요. → 이미지를 확대해 다시 읽게 해서 91곳을 모두 넣었어요.</p></li>
+      <li class="limit"><b>확인 안 된 정보</b><p>운영 시간처럼 공식 자료로 확인되지 않은 내용은 AI가 지어내지 않도록 “공식 안내 확인”으로 남겼어요.</p></li>
+      <li class="limit"><b>가상 값 표시</b><p>동선 거리·시간과 일부 편의시설 위치는 AI가 만든 가상 값이라, 화면에 그렇다고 밝혀 두었어요.</p></li>
+    </ul>
+    <p class="text-xs text-stone-500 mt-4">※ 축제 정보는 대구 북구 보도자료(2026)를 참고했습니다.</p>
+  </section>
+
+  <!-- 페이지 넘김 -->
+  <nav class="pager" aria-label="페이지 이동">
+    <a id="pgPrev" class="pg-btn" href="#home"></a>
+    <span id="dots" class="dots" aria-hidden="true"></span>
+    <a id="pgNext" class="pg-btn next" href="#places"></a>
+  </nav>
+</main>
+
+<!-- 사진 크게 보기 -->
+<div id="lightbox" class="lb" role="dialog" aria-modal="true" aria-label="사진 크게 보기" hidden>
+  <button type="button" class="lb-x" aria-label="닫기">✕</button>
+  <figure class="lb-fig"><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+</div>
+
+<footer class="bg-stone-900 text-stone-300 text-center px-5 py-8 text-sm">
+  <p class="font-jua text-lg text-white">🌶️ 대구 떡볶이 축제 &amp; 스크린야구 체험기</p>
+  <p class="mt-1">Created by 신희정 (2조) - 인문학과 과학기술</p>
+  <p class="mt-2 text-xs text-stone-400">🤖 이 웹페이지는 생성형 AI Claude(Anthropic)와 함께 바이브 코딩으로 만들었습니다.</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  const PAGES = [
+    { key: 'home', icon: '🏠', title: '소개' },
+    { key: 'places', icon: '📍', title: '방문 기록' },
+    { key: 'questions', icon: '💬', title: '질문 3가지' },
+    { key: 'ai', icon: '🤖', title: 'AI 활용' },
+  ];
+  const $ = (s) => document.querySelector(s);
+  const line = $('.tab-bar-line');
+  let current = null;
+
+  function moveLine(tab) {
+    const inset = Math.min(28, tab.offsetWidth * 0.18);
+    line.style.width = (tab.offsetWidth - inset * 2) + 'px';
+    line.style.transform = `translateX(${tab.offsetLeft + inset}px)`;
+  }
+
+  function show(key, smooth) {
+    const idx = PAGES.findIndex((p) => p.key === key);
+    if (idx < 0) return show('home');
+    const changed = key !== current;
+    current = key;
+    document.querySelectorAll('[data-page]').forEach((el) => {
+      const on = el.dataset.page === key;
+      el.hidden = !on;
+      if (on && changed) { el.classList.remove('page-in'); void el.offsetWidth; el.classList.add('page-in'); }
+    });
+    document.querySelectorAll('.tab').forEach((t) => {
+      const on = t.dataset.tab === key;
+      t.classList.toggle('active', on);
+      if (on) { t.setAttribute('aria-current', 'page'); moveLine(t); } else t.removeAttribute('aria-current');
+    });
+    const prev = PAGES[idx - 1], next = PAGES[idx + 1];
+    const pp = $('#pgPrev'), pn = $('#pgNext');
+    pp.hidden = !prev; if (prev) { pp.href = '#' + prev.key; pp.textContent = `← ${prev.icon} ${prev.title}`; }
+    pn.hidden = !next; if (next) { pn.href = '#' + next.key; pn.textContent = `${next.icon} ${next.title} →`; }
+    $('#dots').innerHTML = PAGES.map((p, i) => `<i class="${i === idx ? 'on' : ''}"></i>`).join('');
+    document.title = key === 'home' ? '떡볶이 축제 & 스크린야구 체험기' : `${PAGES[idx].title} · 떡볶이 축제 & 스크린야구 체험기`;
+    if (changed) window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    if (location.hash !== '#' + key) history.replaceState(null, '', '#' + key);
+  }
+
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const key = a.getAttribute('href').slice(1);
+    if (!PAGES.some((p) => p.key === key)) return;
+    e.preventDefault();
+    show(key);
+  });
+  window.addEventListener('hashchange', () => show(location.hash.slice(1) || 'home'));
+  window.addEventListener('resize', () => { const t = document.querySelector('.tab.active'); if (t) moveLine(t); });
+
+  // 질문 아코디언: 0.3초 동안 펼쳐지고 화살표 180도 회전
+  document.querySelectorAll('.qa-btn').forEach((btn) => btn.addEventListener('click', () => {
+    const box = btn.closest('.qa');
+    const open = !box.classList.contains('open');
+    box.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', String(open));
+    const body = document.getElementById(btn.getAttribute('aria-controls'));
+    if (open) body.removeAttribute('inert'); else body.setAttribute('inert', '');
+  }));
+
+  // 사진 크게 보기
+  const lb = $('#lightbox');
+  let lbReturn = null;
+  function openLb(btn) {
+    lbReturn = btn;
+    $('#lbImg').src = btn.dataset.full; $('#lbImg').alt = btn.dataset.cap; $('#lbCap').textContent = btn.dataset.cap;
+    lb.hidden = false; requestAnimationFrame(() => lb.classList.add('show'));
+    document.body.style.overflow = 'hidden';
+    lb.querySelector('.lb-x').focus();
+  }
+  function closeLb() {
+    if (lb.hidden) return;
+    lb.classList.remove('show'); document.body.style.overflow = '';
+    setTimeout(() => { lb.hidden = true; }, 250);
+    if (lbReturn) lbReturn.focus();
+  }
+  document.querySelectorAll('.photo[data-full]').forEach((b) => b.addEventListener('click', () => openLb(b)));
+  lb.addEventListener('click', (e) => { if (e.target === lb || e.target.closest('.lb-x')) closeLb(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLb(); });
+
+  show(location.hash.slice(1) || 'home');
+  // 글꼴을 다 불러온 뒤 탭 막대 위치 다시 맞추기
+  if (document.fonts) document.fonts.ready.then(() => { const t = document.querySelector('.tab.active'); if (t) moveLine(t); });
+})();
+</script>
+</body>
+</html>
